@@ -16,13 +16,16 @@ KEYWORDS = ['Ontology Lookup Service', 'Semantics']
 CLASSIFIERS = []
 INSTALL_REQUIRES = [
     'requests',
+    'click',
 ]
 
 EXTRAS_REQUIRE = {}
 TESTS_REQUIRE = [
 ]
 ENTRY_POINTS = {
-
+    'console_scripts': [
+        'ols_client = ols_client.cli:main',
+    ]
 }
 DEPENDENCY_LINKS = [
 ]

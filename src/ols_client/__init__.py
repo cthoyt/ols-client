@@ -6,10 +6,10 @@ Interact with the EBI Ontology Lookup Service. Currently, the use case is tog et
 
 """
 
-from . import get_shit
-from .get_shit import *
+from . import api
+from .api import *
 
-__all__ = get_shit.__all__
+__all__ = api.__all__
 
 __version__ = '0.0.1-dev'
 
