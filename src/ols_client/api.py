@@ -31,40 +31,46 @@ def iterate_ontology_terms(ontology_name, ols_base=None, size=500):
 
     EBI says 500 is max size
     """
-
     ols_base = ols_base or OLS_BASE
-
     url = ols_base.format(ontology_name)
 
-    response = requests.get(url, params={'size': size}).json()
-
-    links = response['_links']
-
-    log.info('On page %s of %s', response['page']['number'], response['page']['totalPages'])
     t = time.time()
+    response = requests.get(url, params={'size': size}).json()
+    links = response['_links']
 
     for x in iterate_response_terms(response):
         yield x
 
-    log.info('Done in %.2f seconds', time.time() - t)
+    t = time.time() - t
+
+    log.info(
+        'Page %s/%s done in %.2f seconds',
+        response['page']['number'],
+        response['page']['totalPages'],
+        t
+    )
+
+    log.info('Estimated time until done: %.2f', t * response['page']['totalPages'] / 60)
 
     while 'next' in links:
-        response = requests.get(links['next']['href'], params={'size': size}).json()
-
-        log.info('On page %s of %s', response['page']['number'], response['page']['totalPages'])
         t = time.time()
+        response = requests.get(links['next']['href'], params={'size': size}).json()
+        links = response['_links']
 
         for x in iterate_response_terms(response):
             yield x
 
-        log.info('Done in %.2f seconds', time.time() - t)
-
-        links = response['_links']
+        log.info(
+            'Page %s/%s done in %.2f seconds',
+            response['page']['number'],
+            response['page']['totalPages'],
+            time.time() - t
+        )
 
 
 def get_labels(ontology_name, ols_base=None):
-    ols_base = ols_base or OLS_BASE
-
+    """Iterates over the labels of terms in the ontology"""
+    log.info('Getting data from %s', ontology_name)
     for term in iterate_ontology_terms(ontology_name, ols_base):
         yield term['label']
 
@@ -74,6 +80,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=20)
     log.setLevel(20)
+
     with open(os.path.join(os.path.expanduser('~'), 'Desktop', 'chebi_from_ols.names'), 'w') as f:
         for label in get_labels('chebi'):
             print(label, file=f)
