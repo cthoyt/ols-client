@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import json
 import logging
+import os
 import time
 
 import requests
@@ -14,7 +16,42 @@ __all__ = [
 
 log = logging.getLogger(__name__)
 
-OLS_BASE = 'http://www.ebi.ac.uk/ols/api/ontologies/{}/terms'
+
+def get_config():
+    """Gets the configuration for this project from the default JSON file, or writes one if it doesn't exist
+
+    :rtype: dict
+    """
+    p = os.path.join(os.path.expanduser('~'), '.config', 'ols_client')
+
+    if not os.path.exists(p):
+        os.makedirs(p)
+
+    cp = os.path.join(p, 'config.json')
+
+    if os.path.exists(cp):
+        with open(cp) as f:
+            return json.load(f)
+
+    cfg = {'BASE': 'http://www.ebi.ac.uk/ols/api'}
+
+    with open(cp, 'w') as f:
+        json.dump(cfg, f, indent=2, sort_keys=True)
+
+    return cfg
+
+
+config = get_config()
+
+OLS_BASE = config['BASE']
+
+
+class OlsClient:
+    def __init__(self, ols_base=None):
+        self.base = ols_base if ols_base is not None else OLS_BASE
+
+    def iterate_ontology_terms(self, ontology_name, size=500):
+        return iterate_ontology_terms(ontology_name, ols_base=self.base, size=size)
 
 
 def iterate_response_terms(response):
@@ -32,7 +69,7 @@ def iterate_ontology_terms(ontology_name, ols_base=None, size=500):
     EBI says 500 is max size
     """
     ols_base = ols_base or OLS_BASE
-    url = ols_base.format(ontology_name)
+    url = '{}/ontologies/{}/terms'.format(ols_base.rstrip('/'), ontology_name)
 
     t = time.time()
     response = requests.get(url, params={'size': size}).json()
@@ -69,18 +106,32 @@ def iterate_ontology_terms(ontology_name, ols_base=None, size=500):
 
 
 def get_labels(ontology_name, ols_base=None):
-    """Iterates over the labels of terms in the ontology"""
+    """Iterates over the labels of terms in the ontology
+
+    :param str ontology_name:
+    :param str ols_base:
+    """
     log.info('Getting data from %s', ontology_name)
     for term in iterate_ontology_terms(ontology_name, ols_base):
         yield term['label']
 
 
+def get_metadata(ontology_name, ols_base=None):
+    ols_base = ols_base or OLS_BASE
+    url = '{}/ontologies/{}'.format(ols_base.rstrip('/'), ontology_name)
+    response = requests.get(url).json()
+    return response
+
+
+def get_description(ontology_name):
+    return get_metadata(ontology_name)['config'].get('description')
+
+
 if __name__ == '__main__':
-    import os
 
     logging.basicConfig(level=20)
     log.setLevel(20)
 
-    with open(os.path.join(os.path.expanduser('~'), 'Desktop', 'chebi_from_ols.names'), 'w') as f:
-        for label in get_labels('chebi'):
+    with open(os.path.join(os.path.expanduser('~'), 'Desktop', 'test.txt'), 'w') as f:
+        for label in get_labels('ancestro'):
             print(label, file=f)

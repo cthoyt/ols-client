@@ -11,7 +11,7 @@ from .api import *
 
 __all__ = api.__all__
 
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2'
 
 __title__ = 'ols_client'
 __description__ = 'Interact with EBI Ontology Lookup Service'
