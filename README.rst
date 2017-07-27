@@ -21,7 +21,7 @@ Cookbook
 Getting labels from ontology
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 >>> from ols_client import get_labels
->>>> labels = get_labels('chebi')
+>>> labels = get_labels('chebi')
 
 Getting labels from ontology using an alternative OLS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
