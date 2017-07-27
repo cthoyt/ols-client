@@ -16,27 +16,35 @@ __all__ = [
 
 log = logging.getLogger(__name__)
 
+CONFIG_DIRECTORY = os.path.join(os.path.expanduser('~'), '.config', 'ols_client')
+CONFIG_PATH = os.path.join(CONFIG_DIRECTORY, 'config.json')
+
+
+def ensure_config_directory():
+    if not os.path.exists(CONFIG_DIRECTORY):
+        os.makedirs(CONFIG_DIRECTORY)
+
+
+def write_config(config):
+    ensure_config_directory()
+
+    with open(CONFIG_PATH, 'w') as f:
+        json.dump(config, f, indent=2, sort_keys=True)
+
 
 def get_config():
     """Gets the configuration for this project from the default JSON file, or writes one if it doesn't exist
 
     :rtype: dict
     """
-    p = os.path.join(os.path.expanduser('~'), '.config', 'ols_client')
+    ensure_config_directory()
 
-    if not os.path.exists(p):
-        os.makedirs(p)
-
-    cp = os.path.join(p, 'config.json')
-
-    if os.path.exists(cp):
-        with open(cp) as f:
+    if os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH) as f:
             return json.load(f)
 
     cfg = {'BASE': 'http://www.ebi.ac.uk/ols/api'}
-
-    with open(cp, 'w') as f:
-        json.dump(cfg, f, indent=2, sort_keys=True)
+    write_config(cfg)
 
     return cfg
 
