@@ -14,7 +14,7 @@ def main():
     """OLS Client Command Line Interface"""
 
 
-@click.command()
+@main.command()
 @click.argument('ontology')
 @click.option('-o', '--output', type=click.File('r'), default=sys.stdout)
 @click.option('-b', '--ols-base', help="OLS base url. Defaults to {}".format(OLS_BASE))
