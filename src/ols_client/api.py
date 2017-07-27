@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
 import json
 import logging
 import os
@@ -51,9 +49,6 @@ OLS_BASE = config['BASE']
 class OlsClient:
     def __init__(self, ols_base=None):
         self.base = ols_base if ols_base is not None else OLS_BASE
-
-    def iterate_ontology_terms(self, ontology_name, size=500):
-        return iterate_ontology_terms(ontology_name, ols_base=self.base, size=size)
 
 
 def iterate_response_terms(response):
@@ -125,15 +120,6 @@ def get_metadata(ontology_name, ols_base=None):
     return response
 
 
-def get_description(ontology_name):
+def get_description(ontology_name, ols_base=None):
+    """Gets the description of a given ontology"""
     return get_metadata(ontology_name)['config'].get('description')
-
-
-if __name__ == '__main__':
-
-    logging.basicConfig(level=20)
-    log.setLevel(20)
-
-    with open(os.path.join(os.path.expanduser('~'), 'Desktop', 'test.txt'), 'w') as f:
-        for label in get_labels('ancestro'):
-            print(label, file=f)
