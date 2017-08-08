@@ -3,7 +3,8 @@
 
 import click
 
-from .api import get_labels, OLS_BASE, write_configuration, get_configuration
+from .api import get_labels
+from .constants import OLS_BASE, write_config, get_config
 
 
 @click.group()
@@ -25,9 +26,9 @@ def labels(ontology, output, ols_base):
 @click.argument('base')
 def set_base(base):
     """Sets the default OLS base url"""
-    config = get_configuration()
+    config = get_config()
     config['BASE'] = base
-    write_configuration(config)
+    write_config(config)
 
 
 if __name__ == '__main__':
