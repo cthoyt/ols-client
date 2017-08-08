@@ -7,9 +7,17 @@ Interact with the EBI Ontology Lookup Service. Currently, the use case is tog et
 """
 
 from . import api
+from . import client
+from . import constants
 from .api import *
+from .client import *
+from .constants import *
 
-__all__ = api.__all__
+__all__ = (
+    constants.__all__ +
+    client.__all__ +
+    api.__all__
+)
 
 __version__ = '0.0.4-dev'
 
