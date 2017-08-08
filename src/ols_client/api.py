@@ -26,7 +26,7 @@ def get_labels(ontology_name, ols_base=None):
 def get_metadata(ontology_name, ols_base=None):
     """Gets the metadata for a given ontology
 
-    :param str ontology_name: Ontology name
+    :param str ontology_name: The name of the ontology
     :param str ols_base: An optional, custom OLS base url
     :return: The dictionary representing the JSON from the OLS
     :rtype: dict

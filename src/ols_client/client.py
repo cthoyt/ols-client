@@ -40,6 +40,7 @@ class OlsClient:
     def iterate_ontology_terms(self, ontology_name, size=500):
         """Iterates over all terms, lazily with paging
 
+        :param str ontology_name: The name of the ontology
         :param int size: The size of each page. EBI says 500 is the maximum size
         """
         if size > 500:
@@ -93,7 +94,7 @@ class OlsClient:
     def get_metadata(self, ontology_name):
         """Gets the metadata for a given ontology
 
-        :param str ontology_name: Ontology name
+        :param str ontology_name: The name of the ontology
         :return: The dictionary representing the JSON from the OLS
         :rtype: dict
         """
@@ -102,7 +103,12 @@ class OlsClient:
         return response
 
     def get_description(self, ontology_name):
-        """Gets the description of a given ontology"""
+        """Gets the description of a given ontology
+
+        :param str ontology_name: The name of the ontology
+        :rtype: str
+        """
         response = self.get_metadata(ontology_name)
 
         return response['config'].get('description')
+
