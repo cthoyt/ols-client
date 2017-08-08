@@ -18,7 +18,7 @@ class TestClient(unittest.TestCase):
         """Tests that the right metadata are acquired."""
         metadata = get_metadata('ancestro')
 
-        self.assertEqual('numberOfTerms', metadata)
+        self.assertIn('numberOfTerms', metadata)
         self.assertEqual(540, metadata['numberOfTerms'])
 
         self.assertIn('config', metadata)
