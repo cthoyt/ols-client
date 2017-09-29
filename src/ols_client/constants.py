@@ -30,12 +30,13 @@ def get_config():
     :rtype: dict
     """
     if not os.path.exists(CONFIG_PATH):
-        write_config({'BASE_URL': 'http://www.ebi.ac.uk/ols/api'})
+        write_config({})
 
     with open(CONFIG_PATH) as f:
         return json.load(f)
 
 
 config = get_config()
+config.setdefault('BASE_URL', 'http://www.ebi.ac.uk/ols')
 
 BASE_URL = config['BASE_URL']
