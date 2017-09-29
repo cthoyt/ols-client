@@ -13,7 +13,7 @@ __all__ = [
 
 log = logging.getLogger(__name__)
 
-api_ontology = '/api/ontologies/{ontology_id}'
+api_ontology = '/api/ontologies/{ontology}'
 api_terms = '/api/ontologies/{ontology}/terms'
 api_term = '/api/ontologies/{ontology}/terms/{iri}'
 api_properties = '/api/ontologies/{ontology}/properties/{iri}'
