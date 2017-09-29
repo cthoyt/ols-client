@@ -21,7 +21,7 @@ __all__ = (
 
 __version__ = '0.0.5-dev'
 
-__title__ = 'ols'
+__title__ = 'ols_client'
 __description__ = 'A Python client for the EBI Ontology Lookup Service RESTful API'
 __url__ = 'https://github.com/cthoyt/ols-client'
 

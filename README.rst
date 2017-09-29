@@ -32,4 +32,4 @@ Using the CLI
 ~~~~~~~~~~~~~
 .. code:: sh
 
-    $ python3 -m ols labels chebi > chebi.txt
+    $ python3 -m ols_client labels chebi > chebi.txt
