@@ -6,6 +6,8 @@
 Welcome to OLS Client's documentation!
 ======================================
 
+This is a Python software package for interfacing with the RESTful API of the EBI OLS.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
