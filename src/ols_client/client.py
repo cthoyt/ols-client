@@ -33,7 +33,7 @@ def iterate_response_terms(response):
 
 
 class OlsClient:
-    """Wraps the functions to query the Ontology Lookup Service"""
+    """Wraps the functions to query the Ontology Lookup Service such that alternative base URL's can be used."""
 
     def __init__(self, ols_base=None):
         """
