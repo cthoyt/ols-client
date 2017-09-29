@@ -6,7 +6,7 @@ import os
 __all__ = [
     'CONFIG_DIRECTORY',
     'CONFIG_PATH',
-    'OLS_BASE',
+    'BASE_URL',
 ]
 
 CONFIG_DIRECTORY = os.path.join(os.path.expanduser('~'), '.config', 'ols_client')
@@ -29,7 +29,7 @@ def get_config():
     :rtype: dict
     """
     if not os.path.exists(CONFIG_PATH):
-        write_config({'BASE': 'http://www.ebi.ac.uk/ols/api'})
+        write_config({'BASE_URL': 'http://www.ebi.ac.uk/ols/api'})
 
     with open(CONFIG_PATH) as f:
         return json.load(f)
@@ -37,4 +37,4 @@ def get_config():
 
 config = get_config()
 
-OLS_BASE = config['BASE']
+BASE_URL = config['BASE_URL']

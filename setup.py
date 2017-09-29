@@ -11,7 +11,7 @@ import setuptools
 #################################################################
 
 PACKAGES = setuptools.find_packages(where='src')
-META_PATH = os.path.join('src', 'ols_client', '__init__.py')
+META_PATH = os.path.join('src', 'ols', '__init__.py')
 KEYWORDS = ['Ontology Lookup Service', 'Semantics']
 CLASSIFIERS = []
 INSTALL_REQUIRES = [

@@ -5,13 +5,19 @@ import time
 
 import requests
 
-from .constants import OLS_BASE
+from .constants import BASE_URL
 
 __all__ = [
     'OlsClient'
 ]
 
 log = logging.getLogger(__name__)
+
+
+def get_ols_search(name):
+    """Performs a search with the Ontology Lookup Service"""
+    res = requests.get(OLS_MACHINE_SEARCH_FMT, params={'q': name})
+    return res.json()
 
 
 def iterate_response_terms(response):
@@ -31,11 +37,38 @@ class OlsClient:
         """
         :param ols_base: An optional, custom URL for the OLS RESTful API.
         """
-        self.base = (ols_base if ols_base is not None else OLS_BASE).rstrip('/')
+        self.base = (ols_base if ols_base is not None else BASE_URL).rstrip('/')
 
         self.ontology_terms_fmt = self.base + '/ontologies/{}/terms'
-
         self.ontology_metadata_fmt = self.base + '/ontologies/{}'
+
+        self.ontology_suggest = self.base + '/suggest'
+
+        self.ontology_search = self.base + '/search'
+
+    def search(self, name):
+        """Searches the OLS with the given term
+
+        :param str name:
+        :return: dict
+        """
+        response = requests.get(self.ontology_search, params={'q': name})
+        return response.json()
+
+    def suggest(self, name, ontology=None):
+        """Suggest terms from an optional list of ontologies
+
+        :param str name:
+        :param list[str] ontology:
+        :rtype: dict
+
+        .. seealso:: https://www.ebi.ac.uk/ols/docs/api#_suggest_term
+        """
+        params = {'q': name}
+        if ontology:
+            params['ontology'] = ','.join(ontology)
+        response = requests.get(self.ontology_suggest, params=params)
+        return response.json()
 
     def iterate_ontology_terms(self, ontology_name, size=500):
         """Iterates over all terms, lazily with paging
@@ -111,4 +144,3 @@ class OlsClient:
         response = self.get_metadata(ontology_name)
 
         return response['config'].get('description')
-

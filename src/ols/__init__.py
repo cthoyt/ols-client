@@ -19,10 +19,10 @@ __all__ = (
     api.__all__
 )
 
-__version__ = '0.0.4'
+__version__ = '0.0.5-dev'
 
-__title__ = 'ols_client'
-__description__ = 'Interact with EBI Ontology Lookup Service'
+__title__ = 'ols'
+__description__ = 'A Python client for the EBI Ontology Lookup Service RESTful API'
 __url__ = 'https://github.com/cthoyt/ols-client'
 
 __author__ = 'Charles Tapley Hoyt'
