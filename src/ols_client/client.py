@@ -24,11 +24,7 @@ api_search = '/api/search'
 
 def _iterate_response_terms(response):
     """Iterates over the terms in the given response"""
-    embedded = response['_embedded']
-
-    terms = embedded['terms']
-
-    for term in terms:
+    for term in response['_embedded']['terms']:
         yield term
 
 
