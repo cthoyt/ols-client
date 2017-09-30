@@ -74,11 +74,12 @@ class OlsClient:
         response = requests.get(self.ontology_suggest, params=params)
         return response.json()
 
-    def iter_terms(self, ontology, size=None):
+    def iter_terms(self, ontology, size=None, sleep=None):
         """Iterates over all terms, lazily with paging
 
         :param str ontology: The name of the ontology
         :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to none.
         """
         if size is None:
             size = 500
@@ -106,6 +107,9 @@ class OlsClient:
         log.info('Estimated time until done: %.2f minutes', t * response['page']['totalPages'] / 60)
 
         while 'next' in links:
+            if sleep:
+                time.sleep(sleep)
+
             t = time.time()
             response = requests.get(links['next']['href'], params={'size': size}).json()
             links = response['_links']
