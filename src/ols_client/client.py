@@ -22,7 +22,7 @@ api_suggest = '/api/suggest'
 api_search = '/api/search'
 
 
-def iterate_response_terms(response):
+def _iterate_response_terms(response):
     """Iterates over the terms in the given response"""
     embedded = response['_embedded']
 
@@ -74,11 +74,11 @@ class OlsClient:
         response = requests.get(self.ontology_suggest, params=params)
         return response.json()
 
-    def iterate_ontology_terms(self, ontology, size=None):
+    def iter_terms(self, ontology, size=None):
         """Iterates over all terms, lazily with paging
 
         :param str ontology: The name of the ontology
-        :param int size: The size of each page. The EBI states 500 is the maximum size.
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         """
         if size is None:
             size = 500
@@ -91,8 +91,8 @@ class OlsClient:
         response = requests.get(url, params={'size': size}).json()
         links = response['_links']
 
-        for x in iterate_response_terms(response):
-            yield x
+        for response_term in _iterate_response_terms(response):
+            yield response_term
 
         t = time.time() - t
 
@@ -103,15 +103,15 @@ class OlsClient:
             t
         )
 
-        log.info('Estimated time until done: %.2f', t * response['page']['totalPages'] / 60)
+        log.info('Estimated time until done: %.2f minutes', t * response['page']['totalPages'] / 60)
 
         while 'next' in links:
             t = time.time()
             response = requests.get(links['next']['href'], params={'size': size}).json()
             links = response['_links']
 
-            for x in iterate_response_terms(response):
-                yield x
+            for response_term in _iterate_response_terms(response):
+                yield response_term
 
             log.info(
                 'Page %s/%s done in %.2f seconds',
@@ -120,15 +120,14 @@ class OlsClient:
                 time.time() - t
             )
 
-    def get_labels(self, ontology, size=None):
-        """Iterates over the labels of terms in the ontology
+    def iter_labels(self, ontology, size=None):
+        """Iterates over the labels of terms in the ontology. Automatically wraps the pager returned by the OLS.
 
         :param str ontology: The name of the ontology
-        :param int size: The size of each page. The EBI states 500 is the maximum size.
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :rtype: iter[str]
         """
-        log.info('Getting data from %s', ontology)
-        for term in self.iterate_ontology_terms(ontology=ontology, size=size):
+        for term in self.iter_terms(ontology=ontology, size=size):
             yield term['label']
 
     def get_metadata(self, ontology):

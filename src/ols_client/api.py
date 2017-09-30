@@ -20,7 +20,7 @@ def get_labels(ontology, ols_base=None):
     :rtype: iter[str]
     """
     client = OlsClient(ols_base=ols_base)
-    return client.get_labels(ontology)
+    return client.iter_labels(ontology)
 
 
 def get_metadata(ontology, ols_base=None):
