@@ -13,7 +13,20 @@ import setuptools
 PACKAGES = setuptools.find_packages(where='src')
 META_PATH = os.path.join('src', 'ols_client', '__init__.py')
 KEYWORDS = ['Ontology Lookup Service', 'Semantics']
-CLASSIFIERS = []
+CLASSIFIERS = [
+    'Development Status :: 4 - Beta',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Topic :: Scientific/Engineering :: Bio-Informatics'
+]
 INSTALL_REQUIRES = [
     'requests',
     'click',
