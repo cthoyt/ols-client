@@ -59,7 +59,7 @@ author = 'Charles Tapley Hoyt'
 # built documents.
 #
 
-release = '0.0.6-dev'
+release = '0.0.6'
 
 # The short X.Y version.
 parsed_version = re.match(
