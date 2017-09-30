@@ -6,7 +6,7 @@ Installation
 ------------
 Install the latest stable version from PyPI
 
-.. code:: sj
+.. code:: sh
 
     $ python3 -m pip install ols_client
 
