@@ -50,7 +50,7 @@ deploy:
       server: https://arty.scai.fraunhofer.de/artifactory/api/pypi/pypi/simple
       password:
           secure: f77gDL4AbAqFDgf83sZLgYyMlinwFYoRJ32oggTGush4zHxUGV8q2c/gpB3+pQWVUAN9JV6wKWSWbx7mc8/zpSvJ3MCBWSZRf0jpfxwUPOQEvj3o+fWPDjoSW5RGQUdrrdmAXfpO9J1dQxNu47TpEApdnnWr2enaXe/HXZ0maGLpCugt0LltVvvnL1F/39J0J+jvNcAd9497ykq/rdE6KMYhQ9SO/jjDRd9IP+7cAov+AVFmU5P0+KzPzOghAy8I9SQZfAmtUIEGr7H0SJhNviAjc8oSqc4Nr9Yofc1nen4olduu52sNjPkn8oqHAfzm8YBHh5ZXjpLOHX3au01XOmwo/htyD8dN+8pDJ7TZ7M7SmMUY6lmlBdb+ToVHFeMoV3U7n5v6skKRCjnGy/VNqqIKhhh7uDrDRpmjMkSePhH0glFvrIlOGwqR2wWaCv0zmpPlDKZ7Szjub6SBpzC8oicnZ1Uhg3sma9xAw2vtI769yrwCKHxvBH37FAjm/j2OVZ44OdvERmToHCMutxECZ2Pb2pd4lltD7Sq145XcRnKvriPWJD/aUM+ML3kXNcmRDVmttWmPfFm66LMCjbTeBlyda7q5cXfnYiK/59DOLudbptXQXFfASxdjhOvM4OulGzYQxdGlgNM4j5figcU3IJ9Az+d+pgfv6ISLT2fbDqE=
-      distributions: "sdist bdist_wheel"
+      distributions: "sdist"
       on:
           tags: true
           repo: cthoyt/ols-client
