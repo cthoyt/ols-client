@@ -14,7 +14,7 @@ def main():
 
 @main.command()
 @click.argument('ontology')
-@click.option('-o', '--output', type=click.File('r'))
+@click.option('-o', '--output', type=click.File('w'))
 @click.option('-b', '--ols-base', help="OLS base url. Defaults to {}".format(BASE_URL))
 def labels(ontology, output, ols_base):
     """Output the names to the given file"""
