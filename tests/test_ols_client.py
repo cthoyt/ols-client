@@ -3,7 +3,7 @@
 
 import unittest
 
-from ols_client import get_labels, get_metadata
+from ols_client import get_labels, get_metadata, get_hierarchy
 
 
 class TestClient(unittest.TestCase):
@@ -13,6 +13,10 @@ class TestClient(unittest.TestCase):
         Uses the ``ancestro`` ontology because it's pretty short"""
         labels = set(get_labels('ancestro'))
         self.assertIn('Irish', labels)
+
+    def test_hierarchy(self):
+        pairs = set(get_hierarchy('ancestro'))
+        self.assertIn(('country', 'Algeria'), pairs)
 
     def test_metadata(self):
         """Tests that the right metadata are acquired."""

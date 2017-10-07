@@ -7,6 +7,7 @@ from .client import OlsClient
 __all__ = [
     'get_labels',
     'get_metadata',
+    'get_hierarchy',
 ]
 
 log = logging.getLogger(__name__)
@@ -33,3 +34,14 @@ def get_metadata(ontology, ols_base=None):
     """
     client = OlsClient(ols_base=ols_base)
     return client.get_ontology(ontology)
+
+
+def get_hierarchy(ontology, ols_base=None):
+    """Iterates over the parent-child relationships in an ontolog
+
+    :param str ontology: The name of the ontology
+    :param str ols_base: An optional, custom OLS base url
+    :rtype: iter[tuple[str,str]]
+    """
+    client = OlsClient(ols_base=ols_base)
+    return client.iter_hierarchy(ontology)
