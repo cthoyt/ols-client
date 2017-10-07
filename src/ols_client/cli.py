@@ -3,7 +3,7 @@
 
 import click
 
-from .api import get_labels
+from .api import get_labels, get_hierarchy
 from .constants import BASE_URL, write_config, get_config
 
 
@@ -20,6 +20,16 @@ def labels(ontology, output, ols_base):
     """Output the names to the given file"""
     for label in get_labels(ontology=ontology, ols_base=ols_base):
         click.echo(label, file=output)
+
+
+@main.command()
+@click.argument('ontology')
+@click.option('-o', '--output', type=click.File('w'))
+@click.option('-b', '--ols-base', help="OLS base url. Defaults to {}".format(BASE_URL))
+def tree(ontology, output, ols_base):
+    """Output the parent-child relations to the given file"""
+    for parent, child in get_hierarchy(ontology=ontology, ols_base=ols_base):
+        click.echo('{}\t{}'.format(parent, child), file=output)
 
 
 @main.command()
