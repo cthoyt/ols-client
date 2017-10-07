@@ -38,9 +38,33 @@ class OlsClient:
         self.base = (ols_base if ols_base is not None else BASE_URL).rstrip('/')
 
         self.ontology_terms_fmt = self.base + api_terms
+        self.ontology_term_fmt = self.base + api_term
         self.ontology_metadata_fmt = self.base + api_ontology
         self.ontology_suggest = self.base + api_suggest
         self.ontology_search = self.base + api_search
+
+    def get_ontology(self, ontology):
+        """Gets the metadata for a given ontology
+
+        :param str ontology: The name of the ontology
+        :return: The dictionary representing the JSON from the OLS
+        :rtype: dict
+        """
+        url = self.ontology_metadata_fmt.format(ontology=ontology)
+        response = requests.get(url)
+        return response.json()
+
+    def get_term(self, ontology, iri):
+        """Gets the data for a given term
+
+        :param str ontology:
+        :param str iri:
+        :rtype: dict
+        """
+        url = self.ontology_term_fmt.format(ontology, iri)
+        response = requests.get(url)
+
+        return response.json()
 
     def search(self, name, query_fields=None):
         """Searches the OLS with the given term
@@ -53,6 +77,7 @@ class OlsClient:
         if query_fields is not None:
             params['queryFields'] = '{{{}}}'.format(','.join(query_fields))
         response = requests.get(self.ontology_search, params=params)
+
         return response.json()
 
     def suggest(self, name, ontology=None):
@@ -68,6 +93,7 @@ class OlsClient:
         if ontology:
             params['ontology'] = ','.join(ontology)
         response = requests.get(self.ontology_suggest, params=params)
+
         return response.json()
 
     def iter_terms(self, ontology, size=None, sleep=None):
@@ -76,6 +102,7 @@ class OlsClient:
         :param str ontology: The name of the ontology
         :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param int sleep: The amount of time to sleep between pages. Defaults to none.
+        :rtype: iter[dict]
         """
         if size is None:
             size = 500
@@ -130,16 +157,23 @@ class OlsClient:
         for term in self.iter_terms(ontology=ontology, size=size):
             yield term['label']
 
-    def get_metadata(self, ontology):
-        """Gets the metadata for a given ontology
+    def iter_hierarchy(self, ontology, size=None):
+        """Iterates over parent-child relations
 
         :param str ontology: The name of the ontology
-        :return: The dictionary representing the JSON from the OLS
-        :rtype: dict
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :rtype: iter[tuple[str,str]]
         """
-        url = self.ontology_metadata_fmt.format(ontology=ontology)
-        response = requests.get(url).json()
-        return response
+        for term in self.iter_terms(ontology=ontology, size=size):
+            try:
+                hierarchy_children_link = term['_links']['hierarchicalChildren']['href']
+            except KeyError:  # there's no children for this one
+                continue
+
+            response = requests.get(hierarchy_children_link).json()
+
+            for child_term in response['_embedded']['terms']:
+                yield term['label'], child_term['label']  # TODO handle different relation types
 
     def get_description(self, ontology):
         """Gets the description of a given ontology
@@ -147,6 +181,6 @@ class OlsClient:
         :param str ontology: The name of the ontology
         :rtype: str
         """
-        response = self.get_metadata(ontology=ontology)
+        response = self.get_ontology(ontology)
 
         return response['config'].get('description')

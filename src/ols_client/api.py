@@ -32,4 +32,4 @@ def get_metadata(ontology, ols_base=None):
     :rtype: dict
     """
     client = OlsClient(ols_base=ols_base)
-    return client.get_metadata(ontology)
+    return client.get_ontology(ontology)
