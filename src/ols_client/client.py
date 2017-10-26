@@ -12,6 +12,7 @@ __all__ = [
 ]
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 HIERARCHICAL_CHILDREN = 'hierarchicalChildren'
 
@@ -130,7 +131,7 @@ class OlsClient:
 
         log.info(
             'Page %s/%s done in %.2f seconds',
-            response['page']['number'],
+            response['page']['number'] + 1,
             response['page']['totalPages'],
             t
         )
@@ -176,6 +177,7 @@ class OlsClient:
         :rtype: iter[dict]
         """
         url = self.ontology_term_descendants_fmt.format(ontology=ontology, iri=iri)
+        log.info('getting %s', url)
         yield from self._iter_terms_helper(url, size=size, sleep=sleep)
 
     def iter_descendants_labels(self, ontology, iri, size=None, sleep=None):
