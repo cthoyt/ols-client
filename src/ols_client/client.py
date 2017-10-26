@@ -5,13 +5,15 @@ import time
 
 import requests
 
-from .constants import BASE_URL
+from ols_client.constants import BASE_URL
 
 __all__ = [
     'OlsClient'
 ]
 
 log = logging.getLogger(__name__)
+
+HIERARCHICAL_CHILDREN = 'hierarchicalChildren'
 
 api_ontology = '/api/ontologies/{ontology}'
 api_terms = '/api/ontologies/{ontology}/terms'
@@ -20,12 +22,18 @@ api_properties = '/api/ontologies/{ontology}/properties/{iri}'
 api_indivduals = '/api/ontologies/{ontology}/individuals/{iri}'
 api_suggest = '/api/suggest'
 api_search = '/api/search'
+api_descendants = '/api/ontologies/{ontology}/terms/{iri}/hierarchicalDescendants'
 
 
 def _iterate_response_terms(response):
     """Iterates over the terms in the given response"""
     for term in response['_embedded']['terms']:
         yield term
+
+
+def _help_iterate_labels(term_iterator):
+    for term in term_iterator:
+        yield term['label']
 
 
 class OlsClient:
@@ -42,6 +50,7 @@ class OlsClient:
         self.ontology_metadata_fmt = self.base + api_ontology
         self.ontology_suggest = self.base + api_suggest
         self.ontology_search = self.base + api_search
+        self.ontology_term_descendants_fmt = self.base + api_descendants
 
     def get_ontology(self, ontology):
         """Gets the metadata for a given ontology
@@ -57,8 +66,8 @@ class OlsClient:
     def get_term(self, ontology, iri):
         """Gets the data for a given term
 
-        :param str ontology:
-        :param str iri:
+        :param str ontology: The name of the ontology
+        :param str iri: The IRI of a term
         :rtype: dict
         """
         url = self.ontology_term_fmt.format(ontology, iri)
@@ -96,10 +105,11 @@ class OlsClient:
 
         return response.json()
 
-    def iter_terms(self, ontology, size=None, sleep=None):
+    @staticmethod
+    def _iter_terms_helper(url, size=None, sleep=None):
         """Iterates over all terms, lazily with paging
 
-        :param str ontology: The name of the ontology
+        :param str url: The url to query
         :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param int sleep: The amount of time to sleep between pages. Defaults to none.
         :rtype: iter[dict]
@@ -108,8 +118,6 @@ class OlsClient:
             size = 500
         elif size > 500:
             raise ValueError('Maximum size is 500. Given: {}'.format(size))
-
-        url = self.ontology_terms_fmt.format(ontology=ontology)
 
         t = time.time()
         response = requests.get(url, params={'size': size}).json()
@@ -147,26 +155,61 @@ class OlsClient:
                 time.time() - t
             )
 
-    def iter_labels(self, ontology, size=None):
+    def iter_terms(self, ontology, size=None, sleep=None):
+        """Iterates over all terms, lazily with paging
+
+        :param str ontology: The name of the ontology
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
+        :rtype: iter[dict]
+        """
+        url = self.ontology_terms_fmt.format(ontology=ontology)
+        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+
+    def iter_descendants(self, ontology, iri, size=None, sleep=None):
+        """Iterates over the descendants of a given term
+
+        :param str ontology: The name of the ontology
+        :param str iri: The IRI of a term
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
+        :rtype: iter[dict]
+        """
+        url = self.ontology_term_descendants_fmt.format(ontology=ontology, iri=iri)
+        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+
+    def iter_descendants_labels(self, ontology, iri, size=None, sleep=None):
+        """Iterates over the labels for the descendants of a given term
+
+        :param str ontology: The name of the ontology
+        :param str iri: The IRI of a term
+        :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
+        :rtype: iter[str]
+        """
+        yield from _help_iterate_labels(self.iter_descendants(ontology, iri, size=size, sleep=sleep))
+
+    def iter_labels(self, ontology, size=None, sleep=None):
         """Iterates over the labels of terms in the ontology. Automatically wraps the pager returned by the OLS.
 
         :param str ontology: The name of the ontology
         :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :rtype: iter[str]
         """
-        for term in self.iter_terms(ontology=ontology, size=size):
-            yield term['label']
+        yield from _help_iterate_labels(self.iter_terms(ontology=ontology, size=size, sleep=sleep))
 
-    def iter_hierarchy(self, ontology, size=None):
+    def iter_hierarchy(self, ontology, size=None, sleep=None):
         """Iterates over parent-child relations
 
         :param str ontology: The name of the ontology
         :param int size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :rtype: iter[tuple[str,str]]
         """
-        for term in self.iter_terms(ontology=ontology, size=size):
+        for term in self.iter_terms(ontology=ontology, size=size, sleep=sleep):
             try:
-                hierarchy_children_link = term['_links']['hierarchicalChildren']['href']
+                hierarchy_children_link = term['_links'][HIERARCHICAL_CHILDREN]['href']
             except KeyError:  # there's no children for this one
                 continue
 
