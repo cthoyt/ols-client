@@ -165,7 +165,8 @@ class OlsClient:
         :rtype: iter[dict]
         """
         url = self.ontology_terms_fmt.format(ontology=ontology)
-        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+        for term in self._iter_terms_helper(url, size=size, sleep=sleep):
+            yield term
 
     def iter_descendants(self, ontology, iri, size=None, sleep=None):
         """Iterates over the descendants of a given term
@@ -178,7 +179,8 @@ class OlsClient:
         """
         url = self.ontology_term_descendants_fmt.format(ontology=ontology, iri=iri)
         log.info('getting %s', url)
-        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+        for term in self._iter_terms_helper(url, size=size, sleep=sleep):
+            yield term
 
     def iter_descendants_labels(self, ontology, iri, size=None, sleep=None):
         """Iterates over the labels for the descendants of a given term
@@ -189,7 +191,8 @@ class OlsClient:
         :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :rtype: iter[str]
         """
-        yield from _help_iterate_labels(self.iter_descendants(ontology, iri, size=size, sleep=sleep))
+        for label in _help_iterate_labels(self.iter_descendants(ontology, iri, size=size, sleep=sleep)):
+            yield label
 
     def iter_labels(self, ontology, size=None, sleep=None):
         """Iterates over the labels of terms in the ontology. Automatically wraps the pager returned by the OLS.
@@ -199,7 +202,8 @@ class OlsClient:
         :param int sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :rtype: iter[str]
         """
-        yield from _help_iterate_labels(self.iter_terms(ontology=ontology, size=size, sleep=sleep))
+        for label in _help_iterate_labels(self.iter_terms(ontology=ontology, size=size, sleep=sleep)):
+            yield label
 
     def iter_hierarchy(self, ontology, size=None, sleep=None):
         """Iterates over parent-child relations
