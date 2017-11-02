@@ -1,9 +1,9 @@
-OLS Client
-==========
+OLS Client |build| |coverage| |documentation|
+=============================================
 A Python wrapper for accessing the RESTful API of the Ontology Lookup Service
 
-Installation
-------------
+Installation |pypi_version| |python_versions| |pypi_license|
+------------------------------------------------------------
 Install the latest stable version from PyPI
 
 .. code:: sh
@@ -33,3 +33,24 @@ Using the CLI
 .. code:: sh
 
     $ python3 -m ols_client labels chebi > chebi.txt
+
+.. |build| image:: https://travis-ci.org/cthoyt/ols-client.svg?branch=master
+    :target: https://travis-ci.org/cthoyt/ols-client
+    :alt: Build Status
+
+.. |coverage| image:: https://codecov.io/gh/cthoyt/ols-client/coverage.svg?branch=master
+    :target: https://codecov.io/gh/cthoyt/ols-client?branch=master
+    :alt: Coverage Status
+
+.. |documentation| image:: https://readthedocs.org/projects/ols-client/badge/?version=stable
+    :target: http://ols-client.readthedocs.io/en/stable/
+    :alt: Documentation Status
+
+.. |python_versions| image:: https://img.shields.io/pypi/pyversions/ols-client.svg
+    :alt: Supported Python Versions
+
+.. |pypi_version| image:: https://img.shields.io/pypi/v/ols-client.svg
+    :alt: Current version on PyPI
+
+.. |pypi_license| image:: https://img.shields.io/pypi/l/ols-client.svg
+    :alt: MIT License
