@@ -19,7 +19,7 @@ __all__ = (
     api.__all__
 )
 
-__version__ = '0.0.9'
+__version__ = '0.0.10-dev'
 
 __title__ = 'ols_client'
 __description__ = 'A Python client for the EBI Ontology Lookup Service RESTful API'
