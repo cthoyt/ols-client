@@ -1,24 +1,26 @@
-.. OLS Client documentation master file, created by
-   sphinx-quickstart on Fri Sep 29 15:28:49 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+OLS Client
+==========
+This is a Python software package for interfacing with the RESTful API of the EBI
+`Ontology Lookup Service <https://www.ebi.ac.uk/ols/index>`_. The most useful functions are available directly from
+import at the `Top Level`_ whereas the functionality is grouped together in the `Client`_
 
-Welcome to OLS Client's documentation!
-======================================
+Top Level
+---------
 
-This is a Python software package for interfacing with the RESTful API of the EBI OLS.
+.. autofunction:: ols_client.get_labels
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. autofunction:: ols_client.get_metadata
 
-   api
-   client
+.. autofunction:: ols_client.get_hierarchy
 
+Client
+------
 
-Indices and tables
-==================
+.. automodule:: ols_client.client
+    :members:
 
+Indices and Tables
+------------------
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

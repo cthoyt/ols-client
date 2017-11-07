@@ -6,9 +6,7 @@ Interact with the EBI Ontology Lookup Service. Currently, the use case is tog et
 
 """
 
-from . import api
-from . import client
-from . import constants
+from . import api, client, constants
 from .api import *
 from .client import *
 from .constants import *
