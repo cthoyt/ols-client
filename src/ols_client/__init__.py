@@ -27,4 +27,4 @@ __author__ = 'Charles Tapley Hoyt'
 __email__ = 'charles.hoyt@scai.fraunhofer.de'
 
 __license__ = 'MIT License'
-__copyright__ = 'Copyright (c) 2017 Charles Tapley Hoyt'
+__copyright__ = 'Copyright (c) 2017-2018 Charles Tapley Hoyt'

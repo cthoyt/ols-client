@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'OLS Client'
-copyright = '2017, Charles Tapley Hoyt'
+copyright = '2017-2018, Charles Tapley Hoyt'
 author = 'Charles Tapley Hoyt'
 
 # The version info for the project you're documenting, acts as replacement for
