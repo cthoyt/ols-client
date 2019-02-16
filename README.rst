@@ -1,6 +1,11 @@
 OLS Client |build| |coverage| |documentation|
 =============================================
-A Python wrapper for accessing the RESTful API of the Ontology Lookup Service
+A Python wrapper for accessing the RESTful API of the Ontology Lookup Service.
+
+
+Since the creation of this repository, the EBI has also generated their own client that
+can be found at https://github.com/Ensembl/ols-client and on PyPI as
+`ebi-ols-client <https://pypi.org/project/ebi-ols-client/>`_.
 
 Installation |pypi_version| |python_versions| |pypi_license|
 ------------------------------------------------------------
