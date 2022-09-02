@@ -5,6 +5,7 @@
 import logging
 import time
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from urllib.parse import quote
 
 import requests
 
@@ -20,22 +21,15 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-HIERARCHICAL_CHILDREN = "hierarchicalChildren"
-
-api_ontology = "/api/ontologies/{ontology}"
-api_terms = "/api/ontologies/{ontology}/terms"
-api_term = "/api/ontologies/{ontology}/terms/{iri}"
-api_properties = "/api/ontologies/{ontology}/properties/{iri}"
-api_indivduals = "/api/ontologies/{ontology}/individuals/{iri}"
-api_suggest = "/api/suggest"
-api_search = "/api/search"
-api_descendants = "/api/ontologies/{ontology}/terms/{iri}/hierarchicalDescendants"
-
 
 def _iterate_response_terms(response):
     """Iterate over the terms in the given response."""
-    for term in response["_embedded"]["terms"]:
-        yield term
+    yield from response["_embedded"]["terms"]
+
+
+def _quote(iri):
+    # FIXME this must be an error on the OLS side
+    return quote(iri, safe="").replace("%", "%25")
 
 
 def _help_iterate_labels(term_iterator):
@@ -49,16 +43,12 @@ class Client:
     def __init__(self, base_url: str):
         """Initialize the client.
 
-        :param base_url: An optional, custom URL for the OLS RESTful API.
+        :param base_url: An optional, custom URL for the OLS API.
         """
-        self.base_url = base_url.rstrip("/")
-
-        self.ontology_terms_fmt = self.base_url + api_terms
-        self.ontology_term_fmt = self.base_url + api_term
-        self.ontology_metadata_fmt = self.base_url + api_ontology
-        self.ontology_suggest = self.base_url + api_suggest
-        self.ontology_search = self.base_url + api_search
-        self.ontology_term_descendants_fmt = self.base_url + api_descendants
+        base_url = base_url.rstrip("/")
+        if not base_url.endswith("/api"):
+            base_url = f"{base_url}/api"
+        self.base_url = base_url
 
     def get_json(
         self,
@@ -97,18 +87,54 @@ class Client:
             res.raise_for_status()
         return res
 
+    def get_paged(
+        self,
+        path: str,
+        key: Optional[str] = None,
+        size: Optional[int] = None,
+        sleep: Optional[int] = None,
+    ) -> Iterable:
+        """Iterate over all terms, lazily with paging.
+
+        :param path: The url to query
+        :param key: The key to slice from the _embedded field
+        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param sleep: The amount of time to sleep between pages. Defaults to none.
+        :yields: A terms in an ontology
+        :raises ValueError: if an invalid size is given
+        """
+        if size is None:
+            size = 500
+        elif size > 500:
+            raise ValueError(f"Maximum size is 500. Given: {size}")
+
+        res_json = self.get_json(path, params={"size": size})
+        yv = res_json["_embedded"]
+        if key:
+            yv = yv[key]
+        yield from yv
+        next_href = (res_json.get("_links") or {}).get("href")
+        while next_href:
+            if sleep is not None:
+                time.sleep(sleep)
+            loop_res_json = requests.get(next_href).json()
+            yv = loop_res_json["_embedded"]
+            if key:
+                yv = yv[key]
+            yield from yv
+            next_href = (loop_res_json.get("_links") or {}).get("href")
+
     def get_ontologies(self):
         """Get all ontologies."""
-        return self.get_json("/api/ontologies")
+        return self.get_paged("/ontologies", key="ontologies")
 
     def get_ontology(self, ontology: str):
         """Get the metadata for a given ontology.
 
         :param ontology: The name of the ontology
         :return: The dictionary representing the JSON from the OLS
-        :returns: Results about the ontology
         """
-        return self.get_json(self.ontology_metadata_fmt.format(ontology=ontology))
+        return self.get_json(f"/ontologies/{ontology}")
 
     def get_term(self, ontology: str, iri: str):
         """Get the data for a given term.
@@ -117,7 +143,7 @@ class Client:
         :param iri: The IRI of a term
         :returns: Results about the term
         """
-        return self.get_json(self.ontology_term_fmt.format(ontology, iri))
+        return self.get_json(f"/ontologies/{ontology}/terms/{iri}")
 
     def search(self, query: str, query_fields: Optional[List[str]] = None):
         """Search the OLS with the given term.
@@ -130,7 +156,7 @@ class Client:
         params = {"q": query}
         if query_fields is not None:
             params["queryFields"] = "{{{}}}".format(",".join(query_fields))
-        return self.get_json(self.ontology_search, params=params)
+        return self.get_json("/search", params=params)
 
     def suggest(self, query: str, ontology: Union[None, str, List[str]] = None):
         """Suggest terms from an optional list of ontologies.
@@ -144,60 +170,7 @@ class Client:
         params = {"q": query}
         if ontology:
             params["ontology"] = ",".join(ontology) if isinstance(ontology, list) else ontology
-        return self.get_json(self.ontology_suggest, params=params)
-
-    @staticmethod
-    def _iter_terms_helper(url: str, size: Optional[int] = None, sleep: Optional[int] = None):
-        """Iterate over all terms, lazily with paging.
-
-        :param url: The url to query
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
-        :param sleep: The amount of time to sleep between pages. Defaults to none.
-        :rtype: iter[dict]
-        :yields: A terms in an ontology
-        :raises ValueError: if an invalid size is given
-        """
-        if size is None:
-            size = 500
-        elif size > 500:
-            raise ValueError("Maximum size is 500. Given: {}".format(size))
-
-        t = time.time()
-        response = requests.get(url, params={"size": size}).json()
-        links = response["_links"]
-
-        for response_term in _iterate_response_terms(response):
-            yield response_term
-
-        t = time.time() - t
-
-        logger.info(
-            "Page %s/%s done in %.2f seconds",
-            response["page"]["number"] + 1,
-            response["page"]["totalPages"],
-            t,
-        )
-
-        logger.info(
-            "Estimated time until done: %.2f minutes", t * response["page"]["totalPages"] / 60
-        )
-
-        while "next" in links:
-            if sleep:
-                time.sleep(sleep)
-
-            t = time.time()
-            response = requests.get(links["next"]["href"], params={"size": size}).json()
-            links = response["_links"]
-
-            yield from _iterate_response_terms(response)
-
-            logger.info(
-                "Page %s/%s done in %.2f seconds",
-                response["page"]["number"],
-                response["page"]["totalPages"],
-                time.time() - t,
-            )
+        return self.get_json("/suggest", params=params)
 
     def iter_terms(self, ontology: str, size: Optional[int] = None, sleep: Optional[int] = None):
         """Iterate over all terms, lazily with paging.
@@ -208,10 +181,11 @@ class Client:
         :rtype: iter[dict]
         :yields: Terms in the ontology
         """
-        url = self.ontology_terms_fmt.format(ontology=ontology)
-        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+        yield from self.get_paged(
+            f"/ontologies/{ontology}/terms", key="terms", size=size, sleep=sleep
+        )
 
-    def iter_descendants(
+    def iter_ancestors(
         self,
         ontology: str,
         iri: str,
@@ -227,11 +201,14 @@ class Client:
         :rtype: iter[dict]
         :yields: the descendants of the given term
         """
-        url = self.ontology_term_descendants_fmt.format(ontology=ontology, iri=iri)
-        logger.info("getting %s", url)
-        yield from self._iter_terms_helper(url, size=size, sleep=sleep)
+        yield from self.get_paged(
+            f"ontologies/{ontology}/terms/{_quote(iri)}/ancestors",
+            key="terms",
+            size=size,
+            sleep=sleep,
+        )
 
-    def iter_descendants_labels(
+    def iter_ancestors_labels(
         self, ontology: str, iri: str, size: Optional[int] = None, sleep: Optional[int] = None
     ) -> Iterable[str]:
         """Iterate over the labels for the descendants of a given term.
@@ -242,9 +219,7 @@ class Client:
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :yields: labels of the descendants of the given term
         """
-        yield from _help_iterate_labels(
-            self.iter_descendants(ontology, iri, size=size, sleep=sleep)
-        )
+        yield from _help_iterate_labels(self.iter_ancestors(ontology, iri, size=size, sleep=sleep))
 
     def iter_labels(
         self, ontology: str, size: Optional[int] = None, sleep: Optional[int] = None
@@ -270,7 +245,7 @@ class Client:
         """
         for term in self.iter_terms(ontology=ontology, size=size, sleep=sleep):
             try:
-                hierarchy_children_link = term["_links"][HIERARCHICAL_CHILDREN]["href"]
+                hierarchy_children_link = term["_links"]["hierarchicalChildren"]["href"]
             except KeyError:  # there's no children for this one
                 continue
 
@@ -313,7 +288,7 @@ class TIBClient(Client):
 
     def __init__(self):
         """Initialize the client."""
-        super().__init__(base_url="https://service.tib.eu/ts4tib/")
+        super().__init__(base_url="https://service.tib.eu/ts4tib")
 
 
 class NFDI4IngClient(Client):
@@ -328,7 +303,7 @@ class NFDI4IngClient(Client):
 
     def __init__(self):
         """Initialize the client."""
-        super().__init__(base_url="https://service.tib.eu/ts4ing/index")
+        super().__init__(base_url="https://service.tib.eu/ts4ing")
 
 
 class NFDI4ChemClient(Client):
@@ -343,4 +318,4 @@ class NFDI4ChemClient(Client):
 
     def __init__(self):
         """Initialize the client."""
-        super().__init__(base_url="https://terminology.nfdi4chem.de/ts/")
+        super().__init__(base_url="https://terminology.nfdi4chem.de/ts")

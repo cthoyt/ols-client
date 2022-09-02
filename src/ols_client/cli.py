@@ -40,10 +40,10 @@ def labels(ontology: str, base_url: str):
 @ontology_argument
 @iri_option
 @base_url_option
-def descendants(ontology: str, iri: str, base_url: str):
-    """Output the descendants of the given term."""
+def ancestors(ontology: str, iri: str, base_url: str):
+    """Output the ancestors of the given term."""
     client = Client(base_url)
-    _echo_via_pager(client.iter_descendants_labels(ontology=ontology, iri=iri))
+    _echo_via_pager(client.iter_ancestors_labels(ontology=ontology, iri=iri))
 
 
 @main.command()
