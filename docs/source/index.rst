@@ -1,23 +1,38 @@
-OLS Client
-==========
-This is a Python software package for interfacing with the RESTful API of the EBI
-`Ontology Lookup Service <https://www.ebi.ac.uk/ols/index>`_. The most useful functions are available directly from
-import at the `Top Level`_ whereas the functionality is grouped together in the `Client`_
+OLS Client |release| Documentation
+==================================
+Installation
+------------
+The most recent release can be installed from
+`PyPI <https://pypi.org/project/ols_client>`_ with:
 
-Top Level
----------
+.. code-block:: shell
 
-.. autofunction:: ols_client.get_labels
+    $ pip install ols_client
 
-.. autofunction:: ols_client.get_metadata
+The most recent code and data can be installed directly from GitHub with:
 
-.. autofunction:: ols_client.get_hierarchy
+.. code-block:: shell
 
-Client
-------
+    $ pip install git+https://github.com/cthoyt/ols-client.git
 
-.. automodule:: ols_client.client
-    :members:
+To install in development mode, use the following:
+
+.. code-block:: shell
+
+    $ git clone git+https://github.com/cthoyt/ols-client.git
+    $ cd ols-client
+    $ pip install -e .
+
+
+Table of Contents
+-----------------
+.. toctree::
+   :maxdepth: 2
+   :caption: Getting Started
+   :name: start
+
+   usage
+   cli
 
 Indices and Tables
 ------------------

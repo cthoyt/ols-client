@@ -1,30 +1,20 @@
 # -*- coding: utf-8 -*-
 
+"""Tests for the client."""
 
 import unittest
 
-from ols_client import get_labels, get_metadata, get_hierarchy
+from ols_client.client import OlsClient
 
 
 class TestClient(unittest.TestCase):
-    def test_terms(self):
-        """Tests that the right terms are acquired.
+    """Test the OLS client."""
 
-        Uses the ``ancestro`` ontology because it's pretty short"""
-        labels = set(get_labels('ancestro'))
-        self.assertIn('Irish', labels)
+    def setUp(self) -> None:
+        """Set up the test case."""
+        self.client = OlsClient()
 
-    def test_hierarchy(self):
-        pairs = set(get_hierarchy('ancestro'))
-        self.assertIn(('country', 'Algeria'), pairs)
-
-    def test_metadata(self):
-        """Tests that the right metadata are acquired."""
-        metadata = get_metadata('ancestro')
-
-        self.assertIn('numberOfTerms', metadata)
-        self.assertEqual(540, metadata['numberOfTerms'])
-
-        self.assertIn('config', metadata)
-        self.assertIn('title', metadata['config'])
-        self.assertIn('Ancestry Ontology', metadata['config']['title'])
+    def test_iter_labels(self):
+        """Test getting labels."""
+        labels = set(self.client.iter_labels("aro"))
+        self.assertIn("process or component of antibiotic biology or chemistry", labels)

@@ -1,45 +1,69 @@
 # -*- coding: utf-8 -*-
 
+"""CLI for the OLS client."""
+
+import sys
+from typing import Optional
 
 import click
 
-from .api import get_labels, get_hierarchy
-from .constants import BASE_URL, write_config, get_config
+from .client import Client
 
 
 @click.group()
 def main():
-    """OLS Client Command Line Interface"""
+    """Run the OLS Client Command Line Interface."""
+
+
+ontology_argument = click.argument("ontology")
+iri_option = click.option("--iri", required=True)
+output_option = click.option("-o", "--output", type=click.File("w"), default=sys.stdout)
+base_url_option = click.option(
+    "-b", "--base-url", default="http://www.ebi.ac.uk/ols", show_default=True
+)
+
+
+def _echo_via_pager(x):
+    click.echo_via_pager((term + "\n" for term in x))
 
 
 @main.command()
-@click.argument('ontology')
-@click.option('-o', '--output', type=click.File('w'))
-@click.option('-b', '--ols-base', help="OLS base url. Defaults to {}".format(BASE_URL))
-def labels(ontology, output, ols_base):
-    """Output the names to the given file"""
-    for label in get_labels(ontology=ontology, ols_base=ols_base):
-        click.echo(label, file=output)
+@ontology_argument
+@base_url_option
+def labels(ontology: str, base_url: str):
+    """Output the names to the given file."""
+    client = Client(base_url)
+    _echo_via_pager(client.iter_labels(ontology))
 
 
 @main.command()
-@click.argument('ontology')
-@click.option('-o', '--output', type=click.File('w'))
-@click.option('-b', '--ols-base', help="OLS base url. Defaults to {}".format(BASE_URL))
-def tree(ontology, output, ols_base):
-    """Output the parent-child relations to the given file"""
-    for parent, child in get_hierarchy(ontology=ontology, ols_base=ols_base):
-        click.echo('{}\t{}'.format(parent, child), file=output)
+@ontology_argument
+@iri_option
+@base_url_option
+def descendants(ontology: str, iri: str, base_url: str):
+    """Output the descendants of the given term."""
+    client = Client(base_url)
+    _echo_via_pager(client.iter_descendants_labels(ontology=ontology, iri=iri))
 
 
 @main.command()
-@click.argument('base')
-def set_base(base):
-    """Sets the default OLS base url"""
-    config = get_config()
-    config['BASE'] = base
-    write_config(config)
+@click.argument("query")
+@base_url_option
+def search(query: str, base_url: str):
+    """Search the OLS with the given query."""
+    client = Client(base_url)
+    _echo_via_pager(client.search(query=query))
 
 
-if __name__ == '__main__':
+@main.command()
+@click.argument("query")
+@click.option("--ontology")
+@base_url_option
+def suggest(query: str, ontology: Optional[str], base_url: str):
+    """Suggest a term based on th given query."""
+    client = Client(base_url)
+    click.echo_via_pager((term + "\n" for term in client.suggest(query=query, ontology=ontology)))
+
+
+if __name__ == "__main__":
     main()
