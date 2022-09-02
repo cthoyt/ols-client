@@ -12,7 +12,7 @@ __all__ = [
     # Base client
     "Client",
     # Concrete
-    "OlsClient",
+    "EBIClient",
     "TIBClient",
     "NFDI4ChemClient",
     "NFDI4IngClient",
@@ -96,6 +96,10 @@ class Client:
         if raise_for_status:
             res.raise_for_status()
         return res
+
+    def get_ontologies(self):
+        """Get all ontologies."""
+        return self.get_json("/api/ontologies")
 
     def get_ontology(self, ontology: str):
         """Get the metadata for a given ontology.
@@ -285,7 +289,7 @@ class Client:
         return response["config"].get("description")
 
 
-class OlsClient(Client):
+class EBIClient(Client):
     """The first-party instance of the OLS.
 
     .. seealso:: http://www.ebi.ac.uk/ols

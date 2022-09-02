@@ -4,7 +4,7 @@
 
 import unittest
 
-from ols_client.client import OlsClient
+from ols_client.client import EBIClient
 
 
 class TestClient(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestClient(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up the test case."""
-        self.client = OlsClient()
+        self.client = EBIClient()
 
     def test_iter_labels(self):
         """Test getting labels."""

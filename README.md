@@ -32,24 +32,21 @@
     </a>
 </p>
 
-A client to the EBI Ontology Lookup Service
+A client to the EBI Ontology Lookup Service (OLS) and other instances.
 
 ## 💪 Getting Started
 
-> TODO show in a very small amount of space the **MOST** useful thing your package can do.
-Make it as short as possible! You have an entire set of docs for later.
+One of several OLS clients can be instantiated and accessed with the same API:
 
-### Command Line Interface
+```python
+from ols_client import EBIClient
 
-The ols_client command line tool is automatically installed. It can
-be used from the shell with the `--help` flag to show all subcommands:
-
-```shell
-$ ols_client --help
+ebi_client = EBIClient()
+ontologies = ebi_client.get_ontologies()
 ```
 
-> TODO show the most useful thing the CLI does! The CLI will have documentation auto-generated
-by `sphinx`.
+Further documentation can be found at
+[ols-client.readthedocs.io](https://ols-client.readthedocs.io).
 
 ## 🚀 Installation
 
