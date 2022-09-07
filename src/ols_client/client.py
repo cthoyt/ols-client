@@ -28,8 +28,10 @@ def _iterate_response_terms(response):
 
 
 def _quote(iri):
-    # FIXME this must be an error on the OLS side
-    return quote(iri, safe="").replace("%", "%25")
+    # must be double encoded https://www.ebi.ac.uk/ols/docs/api
+    iri = quote(iri, safe="")
+    iri = quote(iri, safe="")
+    return iri
 
 
 def _help_iterate_labels(term_iterator):
@@ -145,18 +147,20 @@ class Client:
         """
         return self.get_json(f"/ontologies/{ontology}/terms/{iri}")
 
-    def search(self, query: str, query_fields: Optional[List[str]] = None):
+    def search(self, query: str, query_fields: Optional[Iterable[str]] = None, params=None):
         """Search the OLS with the given term.
 
         :param query: The query to search
         :param query_fields: Fields to query
+        :param params: Additional params to pass through to :func:`get_json`
         :return: dict
         :returns: A list of search results
         """
-        params = {"q": query}
+        params = dict(params or {})
+        params["q"] = query
         if query_fields is not None:
             params["queryFields"] = "{{{}}}".format(",".join(query_fields))
-        return self.get_json("/search", params=params)
+        return self.get_json("/search", params=params)["response"]["docs"]
 
     def suggest(self, query: str, ontology: Union[None, str, List[str]] = None):
         """Suggest terms from an optional list of ontologies.
@@ -192,7 +196,7 @@ class Client:
         size: Optional[int] = None,
         sleep: Optional[int] = None,
     ):
-        """Iterate over the descendants of a given term.
+        """Iterate over the ancestors of a given term.
 
         :param ontology: The name of the ontology
         :param iri: The IRI of a term
@@ -203,6 +207,29 @@ class Client:
         """
         yield from self.get_paged(
             f"ontologies/{ontology}/terms/{_quote(iri)}/ancestors",
+            key="terms",
+            size=size,
+            sleep=sleep,
+        )
+
+    def iter_hierarchical_ancestors(
+        self,
+        ontology: str,
+        iri: str,
+        size: Optional[int] = None,
+        sleep: Optional[int] = None,
+    ):
+        """Iterate over the hierarchical of a given term.
+
+        :param ontology: The name of the ontology
+        :param iri: The IRI of a term
+        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
+        :rtype: iter[dict]
+        :yields: the descendants of the given term
+        """
+        yield from self.get_paged(
+            f"ontologies/{ontology}/terms/{_quote(iri)}/hierarchicalAncestors",
             key="terms",
             size=size,
             sleep=sleep,

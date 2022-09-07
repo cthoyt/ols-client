@@ -11,4 +11,4 @@ class TestEbi(cases.TestClient):
 
     client_cls = EBIClient
     test_ontology = "aro"
-    test_label = "process or component of antibiotic biology or chemistry"
+    test_label = "CMY-167"
