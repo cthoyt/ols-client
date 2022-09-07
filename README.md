@@ -30,6 +30,9 @@
     <a href="https://github.com/cthoyt/ols-client/blob/main/.github/CODE_OF_CONDUCT.md">
         <img src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg" alt="Contributor Covenant"/>
     </a>
+    <a href="https://zenodo.org/badge/latestdoi/97004286">
+        <img src="https://zenodo.org/badge/97004286.svg" alt="DOI">
+    </a>
 </p>
 
 A client to the EBI Ontology Lookup Service (OLS) and other instances.
