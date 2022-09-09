@@ -158,8 +158,8 @@ class Client:
         """
         params = dict(params or {})
         params["q"] = query
-        if query_fields is not None:
-            params["queryFields"] = "{{{}}}".format(",".join(query_fields))
+        if query_fields:
+            params["queryFields"] = ",".join(query_fields)
         return self.get_json("/search", params=params)["response"]["docs"]
 
     def suggest(self, query: str, ontology: Union[None, str, List[str]] = None):
