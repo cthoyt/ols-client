@@ -17,6 +17,9 @@ __all__ = [
     "TIBClient",
     "NFDI4ChemClient",
     "NFDI4IngClient",
+    "ZBMedClient",
+    "MonarchClient",
+    "FraunhoferClient",
 ]
 
 logger = logging.getLogger(__name__)
@@ -346,3 +349,38 @@ class NFDI4ChemClient(Client):
     def __init__(self):
         """Initialize the client."""
         super().__init__(base_url="https://terminology.nfdi4chem.de/ts")
+
+
+class ZBMedClient(Client):
+    """The ZB Med instance of the OLS.
+
+    .. seealso:: https://semanticlookup.zbmed.de/ols
+    """
+
+    def __init__(self):
+        """Initialize the client."""
+        super().__init__(base_url="https://semanticlookup.zbmed.de/ols")
+
+
+class MonarchClient(Client):
+    """The Monarch Initiative instance of the OLS.
+
+    .. seealso:: https://ols.monarchinitiative.org/
+    """
+
+    def __init__(self):
+        """Initialize the client."""
+        super().__init__(base_url="https://ols.monarchinitiative.org/")
+
+
+class FraunhoferClient(Client):
+    """The Fraunhofer SCAI instance of the OLS.
+
+    .. warning:: Fraunhofer SCAI resources are typically not maintained, do not rely on this.
+
+    .. seealso:: https://rohan.scai.fraunhofer.de
+    """
+
+    def __init__(self):
+        """Initialize the client."""
+        super().__init__(base_url="https://rohan.scai.fraunhofer.de")

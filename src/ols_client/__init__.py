@@ -4,7 +4,16 @@
 
 from class_resolver import ClassResolver
 
-from .client import Client, EBIClient, NFDI4ChemClient, NFDI4IngClient, TIBClient
+from .client import (
+    Client,
+    EBIClient,
+    FraunhoferClient,
+    MonarchClient,
+    NFDI4ChemClient,
+    NFDI4IngClient,
+    TIBClient,
+    ZBMedClient,
+)
 
 __all__ = [
     "client_resolver",
@@ -15,6 +24,9 @@ __all__ = [
     "TIBClient",
     "NFDI4IngClient",
     "NFDI4ChemClient",
+    "ZBMedClient",
+    "FraunhoferClient",
+    "MonarchClient",
 ]
 
 client_resolver = ClassResolver.from_subclasses(Client)
