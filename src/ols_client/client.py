@@ -87,7 +87,8 @@ class Client:
             params = {}
         if path.startswith(self.base_url):
             path = path[len(self.base_url) :]
-        res = requests.get(self.base_url + "/" + path.lstrip("/"), params=params, **kwargs)
+        url = self.base_url + "/" + path.lstrip("/")
+        res = requests.get(url, params=params, **kwargs)
         if raise_for_status:
             res.raise_for_status()
         return res
@@ -148,7 +149,7 @@ class Client:
         :param iri: The IRI of a term
         :returns: Results about the term
         """
-        return self.get_json(f"/ontologies/{ontology}/terms/{iri}")
+        return self.get_json(f"/ontologies/{ontology}/terms", params={"iri": iri})
 
     def search(self, query: str, query_fields: Optional[Iterable[str]] = None, params=None):
         """Search the OLS with the given term.

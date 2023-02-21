@@ -12,3 +12,12 @@ class TestEbi(cases.TestClient):
     client_cls = EBIClient
     test_ontology = "aro"
     test_label = "CMY-167"
+
+    def test_get_term(self):
+        """Test getting a term."""
+        iri = "http://biomodels.net/SBO/SBO_0000150"
+        res_json = self.client.get_term("sbo", iri)
+        terms = res_json["_embedded"]["terms"]
+        self.assertEqual(1, len(terms))
+        term = terms[0]
+        self.assertEqual(iri, term["iri"])
