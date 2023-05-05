@@ -298,12 +298,12 @@ class Client:
 class EBIClient(Client):
     """The first-party instance of the OLS.
 
-    .. seealso:: http://www.ebi.ac.uk/ols
+    .. seealso:: https://www.ebi.ac.uk/ols4
     """
 
     def __init__(self):
         """Initialize the client."""
-        super().__init__(base_url="http://www.ebi.ac.uk/ols")
+        super().__init__(base_url="https://www.ebi.ac.uk/ols4")
 
 
 class TIBClient(Client):
