@@ -11,7 +11,7 @@ class TestEbi(cases.TestClient):
 
     client_cls = EBIClient
     test_ontology = "aro"
-    test_label = "CMY-167"
+    test_label = "tetracycline-resistant ribosomal protection protein"
 
     def test_get_term(self):
         """Test getting a term."""
