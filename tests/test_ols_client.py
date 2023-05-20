@@ -2,22 +2,24 @@
 
 """Tests for the client."""
 
-from ols_client.client import EBIClient
+from ols_client.client import EBIClient, TIBClient
 from tests import cases
 
 
-class TestEbi(cases.TestClient):
+class TestEBI(cases.TestClient):
     """Tests for the EBI client."""
 
     client_cls = EBIClient
     test_ontology = "aro"
     test_label = "tetracycline-resistant ribosomal protection protein"
+    test_search_query = "Orbitrap Eclipse"
+    test_iri = "sbo", "http://biomodels.net/SBO/SBO_0000150"
 
-    def test_get_term(self):
-        """Test getting a term."""
-        iri = "http://biomodels.net/SBO/SBO_0000150"
-        res_json = self.client.get_term("sbo", iri)
-        terms = res_json["_embedded"]["terms"]
-        self.assertEqual(1, len(terms))
-        term = terms[0]
-        self.assertEqual(iri, term["iri"])
+
+class TestTIB(cases.TestClient):
+    """Tests for the TIB client."""
+
+    client_cls = TIBClient
+    test_ontology = "oeo"
+    test_label = "electric vehicle"
+    test_search_query = "electric vehicle"
