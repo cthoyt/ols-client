@@ -9,8 +9,6 @@ from .client import (
     EBIClient,
     FraunhoferClient,
     MonarchClient,
-    NFDI4ChemClient,
-    NFDI4IngClient,
     TIBClient,
     ZBMedClient,
 )
@@ -22,8 +20,6 @@ __all__ = [
     # Concrete classes
     "EBIClient",
     "TIBClient",
-    "NFDI4IngClient",
-    "NFDI4ChemClient",
     "ZBMedClient",
     "FraunhoferClient",
     "MonarchClient",

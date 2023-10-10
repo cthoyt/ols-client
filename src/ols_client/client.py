@@ -15,8 +15,6 @@ __all__ = [
     # Concrete
     "EBIClient",
     "TIBClient",
-    "NFDI4ChemClient",
-    "NFDI4IngClient",
     "ZBMedClient",
     "MonarchClient",
     "FraunhoferClient",
@@ -320,36 +318,6 @@ class TIBClient(Client):
     def __init__(self):
         """Initialize the client."""
         super().__init__(base_url="https://service.tib.eu/ts4tib")
-
-
-class NFDI4IngClient(Client):
-    """The NFDI4Ing instance of the OLS.
-
-    NFDI4Ing Terminology Service is a repository for engineering
-    ontologies that aims to provide a single point of access to
-    the latest ontology versions.
-
-    .. seealso:: https://service.tib.eu/ts4ing/index
-    """
-
-    def __init__(self):
-        """Initialize the client."""
-        super().__init__(base_url="https://service.tib.eu/ts4ing")
-
-
-class NFDI4ChemClient(Client):
-    """The NFDI4Chem instance of the OLS.
-
-    The NFDI4Chem Terminology Service is a repository for chemistry
-    and related ontologies providing a single point of access to the
-    latest ontology versions.
-
-    .. seealso:: https://terminology.nfdi4chem.de/ts/
-    """
-
-    def __init__(self):
-        """Initialize the client."""
-        super().__init__(base_url="https://terminology.nfdi4chem.de/ts")
 
 
 class ZBMedClient(Client):
