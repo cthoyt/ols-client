@@ -24,7 +24,7 @@ base_url_option = click.option(
 
 
 def _echo_via_pager(x):
-    click.echo_via_pager((term + "\n" for term in x))
+    click.echo_via_pager((f"{term}\n" for term in x))
 
 
 @main.command()

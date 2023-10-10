@@ -162,7 +162,11 @@ class Client:
         params["q"] = query
         if query_fields:
             params["queryFields"] = ",".join(query_fields)
-        return self.get_json("/search", params=params)["response"]["docs"]
+
+        data = self.get_json("/search", params=params)
+        if "response" in data:
+            data = data["response"]
+        return data["docs"]
 
     def suggest(self, query: str, ontology: Union[None, str, List[str]] = None):
         """Suggest terms from an optional list of ontologies.
