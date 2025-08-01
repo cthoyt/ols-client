@@ -21,3 +21,9 @@ class TestEbi(cases.TestClient):
         self.assertEqual(1, len(terms))
         term = terms[0]
         self.assertEqual(iri, term["iri"])
+
+    def test_get_embedding(self) -> None:
+        """Test getting an embedding."""
+        e = self.client.get_embedding("obi", "http://purl.obolibrary.org/obo/OBI_0003699")
+        self.assertIsInstance(e, list)
+        self.assertTrue(all(isinstance(v, float) for v in e))

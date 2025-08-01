@@ -293,6 +293,10 @@ class Client:
         return response["config"].get("description")
 
 
+    def get_embedding(self, ontology:str, iri: str) -> list[float]:
+        """Get the text-based embedding for a term."""
+        return self.get_json(f"v2/ontologies/{ontology}/classes/{_quote(iri)}/llm_embedding")
+
 class EBIClient(Client):
     """The first-party instance of the OLS.
 
