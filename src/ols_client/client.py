@@ -3,7 +3,7 @@
 import logging
 import time
 from collections.abc import Iterable
-from typing import Any, cast
+from typing import Any, TypeAlias, cast
 from urllib.parse import quote
 
 import requests
@@ -18,8 +18,6 @@ __all__ = [
     "TIBClient",
     "ZBMedClient",
 ]
-
-from typing import TypeAlias
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +127,14 @@ class Client:
             raise ValueError(f"Maximum size is 500. Given: {size}")
 
         res_json = self.get_json(path, timeout=timeout, params={"size": size})
-        yv = res_json["_embedded"]
+
+        import rich
+
+        rich.print(res_json)
+
+        yv = res_json.get("_embedded")
+        if yv is None:
+            raise KeyError(f"could not find _embedded when querying {path} - got\n\n{res_json}")
         if key:
             yv = yv[key]
         yield from yv

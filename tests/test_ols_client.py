@@ -1,15 +1,24 @@
 """Tests for the client."""
 
-from ols_client.client import EBIClient
-from tests import cases
+import unittest
+
+from ols_client import EBIClient
 
 
-class TestEbi(cases.TestClient):
+class TestEbi(unittest.TestCase):
     """Tests for the EBI client."""
 
-    client_cls = EBIClient
-    test_ontology = "aro"
-    test_label = "tetracycline-resistant ribosomal protection protein"
+    test_ontology = "duo"
+    test_label = "compiling software"
+
+    def setUp(self) -> None:
+        """Set up the test case."""
+        self.client = EBIClient()
+
+    def test_iter_labels(self) -> None:
+        """Test getting labels."""
+        labels = set(self.client.iter_labels(self.test_ontology))
+        self.assertIn(self.test_label, labels)
 
     def test_get_term(self) -> None:
         """Test getting a term."""
