@@ -108,9 +108,9 @@ This project has been supported by the following grants:
 
 ### Related
 
-Since the creation of this repository, the EBI has also generated their
-own client that can be found at https://github.com/Ensembl/ols-client and
-on PyPI as `ebi-ols-client`.
+Since the creation of this repository, the EBI has also generated their own
+client that can be found at https://github.com/Ensembl/ols-client and on PyPI as
+`ebi-ols-client`.
 
 ### 🍪 Cookiecutter
 
