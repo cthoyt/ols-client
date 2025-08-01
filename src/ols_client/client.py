@@ -127,14 +127,7 @@ class Client:
             raise ValueError(f"Maximum size is 500. Given: {size}")
 
         res_json = self.get_json(path, timeout=timeout, params={"size": size})
-
-        import rich
-
-        rich.print(res_json)
-
-        yv = res_json.get("_embedded")
-        if yv is None:
-            raise KeyError(f"could not find _embedded when querying {path} - got\n\n{res_json}")
+        yv = res_json["_embedded"]
         if key:
             yv = yv[key]
         yield from yv
