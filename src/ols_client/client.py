@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """Client classes for the OLS."""
 
 import logging
 import time
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import Any, TypeAlias, cast
 from urllib.parse import quote
 
 import requests
@@ -14,34 +13,41 @@ __all__ = [
     "Client",
     # Concrete
     "EBIClient",
+    "FraunhoferClient",
+    "MonarchClient",
     "TIBClient",
     "ZBMedClient",
-    "MonarchClient",
-    "FraunhoferClient",
 ]
 
 logger = logging.getLogger(__name__)
 
 
-def _iterate_response_terms(response):
+def _iterate_response_terms(response: dict[str, Any]) -> Iterable[dict[str, Any]]:
     """Iterate over the terms in the given response."""
     yield from response["_embedded"]["terms"]
 
 
-def _quote(iri):
+def _quote(iri: str) -> str:
     # must be double encoded https://www.ebi.ac.uk/ols/docs/api
     iri = quote(iri, safe="")
     iri = quote(iri, safe="")
     return iri
 
 
-def _help_iterate_labels(term_iterator):
+def _help_iterate_labels(term_iterator: Iterable[dict[str, Any]]) -> Iterable[str]:
     for term in term_iterator:
         yield term["label"]
 
 
+TimeoutHint: TypeAlias = float | int | None
+Res: TypeAlias = Any
+
+
 class Client:
-    """Wraps the functions to query the Ontology Lookup Service such that alternative base URL's can be used."""
+    """A client for an OLS instance.
+
+    It wraps the functions to query the OLS such that alternative base URLs can be used.
+    """
 
     def __init__(self, base_url: str):
         """Initialize the client.
@@ -56,21 +62,23 @@ class Client:
     def get_json(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         raise_for_status: bool = True,
-        **kwargs,
-    ):
+        timeout: TimeoutHint = None,
+        **kwargs: Any,
+    ) -> Res:
         """Get the response JSON."""
         return self.get_response(
-            path=path, params=params, raise_for_status=raise_for_status, **kwargs
+            path=path, params=params, raise_for_status=raise_for_status, timeout=timeout, **kwargs
         ).json()
 
     def get_response(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         raise_for_status: bool = True,
-        **kwargs,
+        timeout: TimeoutHint = None,
+        **kwargs: Any,
     ) -> requests.Response:
         """Send a GET request the given endpoint.
 
@@ -78,6 +86,7 @@ class Client:
             If this starts with the base URL, it gets stripped.
         :param params: Parameters to pass through to :func:`requests.get`
         :param raise_for_status: If true and the status code isn't 200, raise an exception
+        :param timeout: The timeout, defaults to 5 seconds if not given
         :param kwargs: Keyword arguments to pass through to :func:`requests.get`
         :returns: The response from :func:`requests.get`
         """
@@ -86,7 +95,7 @@ class Client:
         if path.startswith(self.base_url):
             path = path[len(self.base_url) :]
         url = self.base_url + "/" + path.lstrip("/")
-        res = requests.get(url, params=params, **kwargs)
+        res = requests.get(url, params=params, timeout=timeout or 5, **kwargs)
         if raise_for_status:
             res.raise_for_status()
         return res
@@ -94,16 +103,21 @@ class Client:
     def get_paged(
         self,
         path: str,
-        key: Optional[str] = None,
-        size: Optional[int] = None,
-        sleep: Optional[int] = None,
-    ) -> Iterable:
+        key: str | None = None,
+        size: int | None = None,
+        sleep: int | None = None,
+        timeout: TimeoutHint = None,
+    ) -> Iterable[dict[str, Any]]:
         """Iterate over all terms, lazily with paging.
 
         :param path: The url to query
         :param key: The key to slice from the _embedded field
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to none.
+        :param timeout:
+            The timeout, defaults to 5 seconds if not given.
+            Applied both to initial request and each page
         :yields: A terms in an ontology
         :raises ValueError: if an invalid size is given
         """
@@ -112,7 +126,7 @@ class Client:
         elif size > 500:
             raise ValueError(f"Maximum size is 500. Given: {size}")
 
-        res_json = self.get_json(path, params={"size": size})
+        res_json = self.get_json(path, timeout=timeout, params={"size": size})
         yv = res_json["_embedded"]
         if key:
             yv = yv[key]
@@ -121,35 +135,42 @@ class Client:
         while next_href:
             if sleep is not None:
                 time.sleep(sleep)
-            loop_res_json = requests.get(next_href).json()
+            loop_res_json = requests.get(next_href, timeout=timeout).json()
             yv = loop_res_json["_embedded"]
             if key:
                 yv = yv[key]
             yield from yv
             next_href = (loop_res_json.get("_links") or {}).get("href")
 
-    def get_ontologies(self):
+    def get_ontologies(self) -> Iterable[dict[str, Any]]:
         """Get all ontologies."""
         return self.get_paged("/ontologies", key="ontologies")
 
-    def get_ontology(self, ontology: str):
+    def get_ontology(self, ontology: str) -> dict[str, Any]:
         """Get the metadata for a given ontology.
 
         :param ontology: The name of the ontology
         :return: The dictionary representing the JSON from the OLS
         """
-        return self.get_json(f"/ontologies/{ontology}")
+        return cast(dict[str, Any], self.get_json(f"/ontologies/{ontology}"))
 
-    def get_term(self, ontology: str, iri: str):
+    def get_term(self, ontology: str, iri: str) -> dict[str, Any]:
         """Get the data for a given term.
 
         :param ontology: The name of the ontology
         :param iri: The IRI of a term
         :returns: Results about the term
         """
-        return self.get_json(f"/ontologies/{ontology}/terms", params={"iri": iri})
+        return cast(
+            dict[str, Any], self.get_json(f"/ontologies/{ontology}/terms", params={"iri": iri})
+        )
 
-    def search(self, query: str, query_fields: Optional[Iterable[str]] = None, params=None):
+    def search(
+        self,
+        query: str,
+        query_fields: Iterable[str] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> Res:
         """Search the OLS with the given term.
 
         :param query: The query to search
@@ -164,7 +185,7 @@ class Client:
             params["queryFields"] = ",".join(query_fields)
         return self.get_json("/search", params=params)["response"]["docs"]
 
-    def suggest(self, query: str, ontology: Union[None, str, List[str]] = None):
+    def suggest(self, query: str, ontology: None | str | list[str] = None) -> Res:
         """Suggest terms from an optional list of ontologies.
 
         :param query: The query to suggest
@@ -178,33 +199,40 @@ class Client:
             params["ontology"] = ",".join(ontology) if isinstance(ontology, list) else ontology
         return self.get_json("/suggest", params=params)
 
-    def iter_terms(self, ontology: str, size: Optional[int] = None, sleep: Optional[int] = None):
+    def iter_terms(
+        self,
+        ontology: str,
+        size: int | None = None,
+        sleep: int | None = None,
+        timeout: TimeoutHint = None,
+    ) -> Iterable[dict[str, Any]]:
         """Iterate over all terms, lazily with paging.
 
         :param ontology: The name of the ontology
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
-        :rtype: iter[dict]
+        :param timeout: The timeout, defaults to 5 seconds if not given, applied to each page
         :yields: Terms in the ontology
         """
         yield from self.get_paged(
-            f"/ontologies/{ontology}/terms", key="terms", size=size, sleep=sleep
+            f"/ontologies/{ontology}/terms", key="terms", size=size, sleep=sleep, timeout=timeout
         )
 
     def iter_ancestors(
         self,
         ontology: str,
         iri: str,
-        size: Optional[int] = None,
-        sleep: Optional[int] = None,
-    ):
+        size: int | None = None,
+        sleep: int | None = None,
+    ) -> Iterable[dict[str, Any]]:
         """Iterate over the ancestors of a given term.
 
         :param ontology: The name of the ontology
         :param iri: The IRI of a term
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
-        :rtype: iter[dict]
         :yields: the descendants of the given term
         """
         yield from self.get_paged(
@@ -218,16 +246,16 @@ class Client:
         self,
         ontology: str,
         iri: str,
-        size: Optional[int] = None,
-        sleep: Optional[int] = None,
-    ):
+        size: int | None = None,
+        sleep: int | None = None,
+    ) -> Iterable[dict[str, Any]]:
         """Iterate over the hierarchical of a given term.
 
         :param ontology: The name of the ontology
         :param iri: The IRI of a term
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
-        :rtype: iter[dict]
         :yields: the descendants of the given term
         """
         yield from self.get_paged(
@@ -238,59 +266,69 @@ class Client:
         )
 
     def iter_ancestors_labels(
-        self, ontology: str, iri: str, size: Optional[int] = None, sleep: Optional[int] = None
+        self, ontology: str, iri: str, size: int | None = None, sleep: int | None = None
     ) -> Iterable[str]:
         """Iterate over the labels for the descendants of a given term.
 
         :param ontology: The name of the ontology
         :param iri: The IRI of a term
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :yields: labels of the descendants of the given term
         """
         yield from _help_iterate_labels(self.iter_ancestors(ontology, iri, size=size, sleep=sleep))
 
     def iter_labels(
-        self, ontology: str, size: Optional[int] = None, sleep: Optional[int] = None
+        self, ontology: str, size: int | None = None, sleep: int | None = None
     ) -> Iterable[str]:
-        """Iterate over the labels of terms in the ontology. Automatically wraps the pager returned by the OLS.
+        """Iterate over the labels of terms in the ontology.
 
         :param ontology: The name of the ontology
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
         :yields: labels of terms in the ontology
+
+        This function automatically wraps the pager returned by the OLS.
         """
         yield from _help_iterate_labels(self.iter_terms(ontology=ontology, size=size, sleep=sleep))
 
     def iter_hierarchy(
-        self, ontology: str, size: Optional[int] = None, sleep: Optional[int] = None
-    ) -> Iterable[Tuple[str, str]]:
+        self,
+        ontology: str,
+        size: int | None = None,
+        sleep: int | None = None,
+        timeout: TimeoutHint = None,
+    ) -> Iterable[tuple[str, str]]:
         """Iterate over parent-child relation labels.
 
         :param ontology: The name of the ontology
-        :param size: The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
+        :param size:
+            The size of each page. Defaults to 500, which is the maximum allowed by the EBI.
         :param sleep: The amount of time to sleep between pages. Defaults to 0 seconds.
+        :param timeout: The timeout, defaults to 5 seconds if not given
         :yields: pairs of parent/child labels
         """
-        for term in self.iter_terms(ontology=ontology, size=size, sleep=sleep):
+        for term in self.iter_terms(ontology=ontology, size=size, sleep=sleep, timeout=timeout):
             try:
                 hierarchy_children_link = term["_links"]["hierarchicalChildren"]["href"]
             except KeyError:  # there's no children for this one
                 continue
 
-            response = requests.get(hierarchy_children_link).json()
+            response = requests.get(hierarchy_children_link, timeout=timeout).json()
 
             for child_term in response["_embedded"]["terms"]:
                 yield term["label"], child_term["label"]  # TODO handle different relation types
 
-    def get_description(self, ontology: str) -> Optional[str]:
+    def get_description(self, ontology: str) -> str | None:
         """Get the description of a given ontology.
 
         :param ontology: The name of the ontology
         :returns: The description of the ontology.
         """
         response = self.get_ontology(ontology)
-        return response["config"].get("description")
+        return cast(str | None, response["config"].get("description"))
 
 
     def get_embedding(self, ontology:str, iri: str) -> list[float]:
@@ -303,7 +341,7 @@ class EBIClient(Client):
     .. seealso:: https://www.ebi.ac.uk/ols4
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client."""
         super().__init__(base_url="https://www.ebi.ac.uk/ols4")
 
@@ -311,7 +349,7 @@ class EBIClient(Client):
 class TIBClient(Client):
     """The TIB instance of the OLS.
 
-    With its new Terminology Service, TIB – Leibniz Information Centre
+    With its new Terminology Service, TIB Leibniz Information Centre
     for Science and Technology and University Library provides a single
     point of access to terminology from domains such as architecture,
     chemistry, computer science, mathematics and physics.
@@ -319,7 +357,7 @@ class TIBClient(Client):
     .. seealso:: https://service.tib.eu/ts4tib/
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client."""
         super().__init__(base_url="https://service.tib.eu/ts4tib")
 
@@ -330,7 +368,7 @@ class ZBMedClient(Client):
     .. seealso:: https://semanticlookup.zbmed.de/ols
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client."""
         super().__init__(base_url="https://semanticlookup.zbmed.de/ols")
 
@@ -341,7 +379,7 @@ class MonarchClient(Client):
     .. seealso:: https://ols.monarchinitiative.org/
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client."""
         super().__init__(base_url="https://ols.monarchinitiative.org/")
 
@@ -354,6 +392,6 @@ class FraunhoferClient(Client):
     .. seealso:: https://rohan.scai.fraunhofer.de
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client."""
         super().__init__(base_url="https://rohan.scai.fraunhofer.de")
