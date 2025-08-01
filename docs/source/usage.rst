@@ -1,4 +1,5 @@
 Usage
 =====
-.. automodule:: ols_client.client
+
+.. automodule:: ols_client.api
     :members:

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Tests for the client."""
 
 from ols_client.client import EBIClient
@@ -13,7 +11,7 @@ class TestEbi(cases.TestClient):
     test_ontology = "aro"
     test_label = "tetracycline-resistant ribosomal protection protein"
 
-    def test_get_term(self):
+    def test_get_term(self) -> None:
         """Test getting a term."""
         iri = "http://biomodels.net/SBO/SBO_0000150"
         res_json = self.client.get_term("sbo", iri)
