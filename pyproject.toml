@@ -112,8 +112,11 @@ release = [
 ]
 
 # see https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#dependencies-optional-dependencies
-# [project.optional-dependencies]
-
+[project.optional-dependencies]
+similarity = [
+    "scikit-learn",
+    "numpy",
+]
 
 # See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#urls
 # and also https://packaging.python.org/en/latest/specifications/well-known-project-urls/
