@@ -34,3 +34,13 @@ class TestEbi(unittest.TestCase):
         e = self.client.get_embedding("obi", "http://purl.obolibrary.org/obo/OBI_0003699")
         self.assertIsInstance(e, list)
         self.assertTrue(all(isinstance(v, float) for v in e))
+
+    def test_get_embedding_similarity(self) -> None:
+        """Test getting an embedding."""
+        similarity = self.client.get_embedding_similarity(
+            "obi",
+            "http://purl.obolibrary.org/obo/OBI_0003699",
+            "ncit",
+            "http://purl.obolibrary.org/obo/NCIT_C71104",
+        )
+        self.assertIsInstance(similarity, float)

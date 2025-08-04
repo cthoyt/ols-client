@@ -337,6 +337,18 @@ class Client:
             self.get_json(f"v2/ontologies/{ontology}/classes/{_quote(iri)}/llm_embedding"),
         )
 
+    def get_embedding_similarity(
+        self, ontology: str, iri: str, ontology_b: str, iri_b: str
+    ) -> float:
+        """Get cosine similarity between two entities' embeddings."""
+        import numpy as np
+        from sklearn.metrics.pairwise import cosine_similarity
+
+        e1 = self.get_embedding(ontology, iri)
+        e2 = self.get_embedding(ontology_b, iri_b)
+        rv = cosine_similarity(np.array(e1).reshape(1, -1), np.array(e2).reshape(1, -1))
+        return cast(float, rv[0][0].item())
+
 
 class EBIClient(Client):
     """The first-party instance of the OLS.
